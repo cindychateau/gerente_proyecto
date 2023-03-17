@@ -1,5 +1,6 @@
 package com.codingdojo.cynthia.servicios;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.mindrot.jbcrypt.BCrypt;
@@ -84,6 +85,42 @@ public class AppService {
 	/*Guarda en BD los cambios de usuario*/
 	public User saveUser(User user) {
 		return repoUser.save(user);
+	}
+	
+	/*Regrese la lista de proyectos a los cuales NO pertenezco*/
+	public List<Project> findOtherProjects(User userInSession) {
+		return repoProject.findByUsersJoinedNotContains(userInSession);
+	}
+	
+	/*Regrese la lista de proyectos a los cuales SI pertenezco*/
+	public List<Project> findMyProjects(User userInSession) {
+		return repoProject.findAllByUsersJoined(userInSession);
+	}
+	
+	/*Regrese objeto de proyecto en base a su ID*/
+	public Project findProject(Long id) {
+		return repoProject.findById(id).orElse(null);
+	}
+	
+	/*Método que nos una a un proyecto */
+	public void saveProjectUser(Long projectId, Long userId) {
+		User myUser = findUser(userId); //Obtiene el objeto de usuario
+		Project myProject = findProject(projectId);
+		
+		myUser.getProjectsJoined().add(myProject);
+		repoUser.save(myUser);
+	}
+	
+	/*Método que nos elimine de un proyecto*/
+	public void removeProjectUser(Long projectId, Long userId) {
+		User myUser = findUser(userId);
+		Project myProject = findProject(projectId);
+		
+		/*myProject.getUsersJoined().remove(myUser);
+		repoProject.save(myProject);*/
+		
+		myUser.getProjectsJoined().remove(myProject);
+		repoUser.save(myUser);
 	}
 	
 }
